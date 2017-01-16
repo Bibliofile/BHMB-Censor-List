@@ -50,7 +50,7 @@ var biblio_censor = MessageBotExtension('biblio_censor');
 
     ex.hook.listen('world.message', censorChecker);
     function censorChecker(name, message) {
-        if (ex.bot.checkGroup('staff', name)) {
+        if (ex.world.isStaff(name)) {
             return; //Don't check staff messages
         }
 
