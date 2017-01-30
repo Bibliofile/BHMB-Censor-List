@@ -23,7 +23,7 @@ var biblio_censor = MessageBotExtension('biblio_censor');
     var toSend = ex.storage.getString('biblio_censor_message', '/kick {{NAME}}');
 
     ex.tab = ex.ui.addTab('Censoring');
-    ex.tab.innerHTML = '<style>#biblio_censor textarea{overflow: hidden; min-height: 30px; resize: none; width: 100%;}</style><div id="biblio_censor"> <h3 class="title">Censoring</h3> <p>When any of the words in the list below are said, say</p><input class="input"> <p>Messages from staff will not be checked.</p><hr> <p>One word per line, if you put the word "doodle" and someone says "d&oslash;odle", it will be caught.</p><textarea></textarea></div>';
+    ex.tab.innerHTML = '<style>#biblio_censor textarea{overflow: hidden; min-height: 30px; resize: none; width: 100%;}</style><div id="biblio_censor" class="container"> <h3 class="title">Censoring</h3> <p>When any of the words in the list below are said, say</p><input class="input"> <p>Messages from staff will not be checked.</p><hr> <p>One word per line, if you put the word "doodle" and someone says "d&oslash;odle", it will be caught.</p><textarea></textarea></div>';
 
     ex.tab.querySelector('input').value = toSend;
     ex.tab.querySelector('textarea').value = list.join('\n');
