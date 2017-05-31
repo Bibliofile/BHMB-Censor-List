@@ -6,62 +6,35 @@
     devel: true
 */
 /*globals
-    MessageBotExtension
+    MessageBot
 */
 
-var biblio_censor = MessageBotExtension('biblio_censor');
-
-(function(ex) {
-    ex.setAutoLaunch(true);
-    ex.uninstall = function() {
-        ex.ui.removeTab(ex.tab);
-        ex.storage.removeNamespace('biblio_censor_');
-        ex.hook.remove('world.message', censorChecker);
-    };
-
-    var list = ex.storage.getObject('biblio_censor_list', []);
-    var toSend = ex.storage.getString('biblio_censor_message', '/kick {{NAME}}');
-
-    ex.tab = ex.ui.addTab('Censoring');
-    ex.tab.innerHTML = '<style>#biblio_censor textarea{overflow: hidden; min-height: 30px; resize: none; width: 100%;}</style><div id="biblio_censor" class="container"> <h3 class="title">Censoring</h3> <p>When any of the words in the list below are said, say</p><input class="input"> <p>Messages from staff will not be checked.</p><hr> <p>One word per line, if you put the word "doodle" and someone says "d&oslash;odle", it will be caught.</p><textarea></textarea></div>';
-
-    ex.tab.querySelector('input').value = toSend;
-    ex.tab.querySelector('textarea').value = list.join('\n');
-
-    //Grow textarea as needed
-    ex.tab.querySelector('textarea').addEventListener('keyup', function(e){
-        var el = e.target;
-
-        el.style.height = 'auto';
-
-        el.style.height = el.scrollHeight + 'px';
-    });
-
-    ex.tab.addEventListener('change', function() {
-        toSend = ex.tab.querySelector('input').value;
-        list = ex.tab.querySelector('textarea').value.split('\n');
-        list = list.filter(function(v) {
-            return v.length > 1;
-        });
-        ex.storage.set('biblio_censor_list', list);
-        ex.storage.set('biblio_censor_message', toSend);
-    });
+MessageBot.registerExtension('bibliofile/censoring', function(ex, world) {
+    function getList() {
+        return world.storage.getObject('biblio_censor_list', []);
+    }
+    function getMessage() {
+        return world.storage.getString('biblio_censor_message', '/kick {{NAME}}');
+    }
 
 
-    ex.hook.listen('world.message', censorChecker);
-    function censorChecker(name, message) {
-        if (ex.world.isStaff(name)) {
+    function censorChecker(info) {
+        if (info.player.isStaff()) {
             return; //Don't check staff messages
         }
 
-        var normal = normalizeMessage(message);
-        if (list.some(function(word) { return normal.includes(normalizeMessage(word)); })) {
-            var send = toSend.replace(/{{NAME}}/g, name)
-                .replace(/{{Name}}/g, name[0] + name.substr(1).toLocaleLowerCase())
-                .replace(/{{name}}/g, name.toLocaleLowerCase());
-            ex.bot.send(send);
+        var normal = normalizeMessage(info.message);
+        if (getList().some(function(word) { return normal.includes(normalizeMessage(word)); })) {
+            ex.bot.send(getMessage(), {
+                name: info.player.getName()
+            });
         }
     }
+    world.onMessage.sub(censorChecker);
+    ex.uninstall = function() {
+        world.storage.clearNamespace('biblio_censor_');
+        world.onMessage.unsub(censorChecker);
+    };
 
     function normalizeMessage(message) {
         function filter(c) {
@@ -107,4 +80,32 @@ var biblio_censor = MessageBotExtension('biblio_censor');
         return filtered.replace(/[ \t]/g, '');
     }
 
-}(biblio_censor));
+    // Browser only
+    if (ex.isNode || !ex.bot.getExports('ui')) return;
+
+
+    var ui = ex.bot.getExports('ui');
+    var tab = ui.addTab('Censoring');
+    tab.innerHTML = '<style>#biblio_censor textarea{overflow: hidden; min-height: 30px; resize: none; width: 100%;}</style><div id="biblio_censor" class="container"> <h3 class="title">Censoring</h3> <p>When any of the words in the list below are said, say</p><input class="input"> <p>Messages from staff will not be checked.</p><hr> <p>One word per line, if you put the word "doodle" and someone says "d&oslash;odle", it will be caught.</p><textarea></textarea></div>';
+    tab.querySelector('input').value = getMessage();
+    tab.querySelector('textarea').value = getList().join('\n');
+
+    tab.querySelector('textarea').addEventListener('keyup', function(e){
+        var el = e.target;
+        el.style.height = 'auto';
+        el.style.height = el.scrollHeight + 'px';
+    });
+
+    tab.addEventListener('input', function() {
+        world.storage.set('biblio_censor_message', tab.querySelector('input').value);
+        world.storage.set('biblio_censor_list', tab.querySelector('textarea').value.split('\n').filter(function(v) {
+            return v.length > 1;
+        }));
+    });
+
+    ex.uninstall = function() {
+        world.storage.clearNamespace('biblio_censor_');
+        world.onMessage.unsub(censorChecker);
+        ui.removeTab(tab);
+    };
+});
