@@ -11,7 +11,7 @@ function normalizeMessage(message: string) {
       return 'a'
     } else if (check(['ß'])) {
       return 'b'
-    } else if (check(['ç', 'č', 'ć'])) {
+    } else if (check(['ç', 'č', 'ć', String.fromCharCode(1089)])) {
       return 'c'
     } else if (check(['é', 'ê', 'è', 'ë', 'ę', 'ė', 'ē'])) {
       return 'e'

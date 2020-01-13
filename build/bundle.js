@@ -4,7 +4,7 @@
 	(factory(global['@bhmb/bot']));
 }(this, (function (bot) { 'use strict';
 
-var html = "<style>\r\n    #biblio_censor textarea {\r\n        overflow: hidden;\r\n        min-height: 30px;\r\n        resize: none;\r\n        width: 100%;\r\n    }\r\n</style>\r\n<div id=\"biblio_censor\" class=\"container\">\r\n    <h3 class=\"title\">Censoring</h3>\r\n    <p>When any of the words in the list below are said, say</p>\r\n    <input class=\"input\">\r\n    <p>Messages from staff will not be checked.</p>\r\n    <hr>\r\n    <p>One word per line, if you put the word \"doodle\" and someone says \"d&oslash;odle\", it will be caught.</p>\r\n    <textarea></textarea>\r\n</div>\r\n";
+var html = "<style>\n    #biblio_censor textarea {\n        overflow: hidden;\n        min-height: 30px;\n        resize: none;\n        width: 100%;\n    }\n</style>\n<div id=\"biblio_censor\" class=\"container\">\n    <h3 class=\"title\">Censoring</h3>\n    <p>When any of the words in the list below are said, say</p>\n    <input class=\"input\">\n    <p>Messages from staff will not be checked.</p>\n    <hr>\n    <p>One word per line, if you put the word \"doodle\" and someone says \"d&oslash;odle\", it will be caught.</p>\n    <textarea></textarea>\n</div>\n";
 
 function normalizeMessage(message) {
     function filter(c) {
@@ -15,7 +15,7 @@ function normalizeMessage(message) {
         else if (check(['ß'])) {
             return 'b';
         }
-        else if (check(['ç', 'č', 'ć'])) {
+        else if (check(['ç', 'č', 'ć', String.fromCharCode(1089)])) {
             return 'c';
         }
         else if (check(['é', 'ê', 'è', 'ë', 'ę', 'ė', 'ē'])) {
